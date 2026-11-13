@@ -1,0 +1,219 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StockLens: stock analysis in one click</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📈%3C/text%3E%3C/svg%3E">
+<style>
+
+:root{--bg:#f5f6f8;--card:#fff;--tx:#14181f;--mut:#667085;--bd:#e2e5ea;--up:#0a8f5b;--dn:#d6334a;--ac:#2f5bea;--wn:#c98a06;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1116;--card:#171b22;--tx:#e8ebf0;--mut:#98a2b3;--bd:#2a303a;--up:#2ecc8f;--dn:#ff5c75;--ac:#7b9bff;--wn:#f0b429}}
+:root[data-theme="dark"]{--bg:#0e1116;--card:#171b22;--tx:#e8ebf0;--mut:#98a2b3;--bd:#2a303a;--up:#2ecc8f;--dn:#ff5c75;--ac:#7b9bff;--wn:#f0b429}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0}h2{font-size:15px;margin:0 0 8px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+textarea{width:100%;height:110px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px;font:12px ui-monospace,Menlo,monospace}
+input[type=text],input[type=number]{background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px;width:150px}
+select{background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:6px}
+button,.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:14px}
+button.g,.btn.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.v{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.vb{font-size:28px;font-weight:800}.up{color:var(--up)}.dn{color:var(--dn)}.wn{color:var(--wn)}
+.gauge{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--dn),var(--wn),var(--up));position:relative;margin:10px 0 2px}
+.gauge i{position:absolute;top:-4px;width:4px;height:18px;background:var(--tx);border-radius:2px}
+.gl{display:flex;justify-content:space-between;color:var(--mut);font-size:11px}
+.sc{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:7px 6px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.k{background:var(--bg);border-radius:8px;padding:8px 10px}.k b{display:block;font-size:16px}.k span{color:var(--mut);font-size:12px}
+canvas{display:block;width:100%}label{font-size:13px;margin-right:8px;white-space:nowrap}
+.dis{color:var(--mut);font-size:12px}a{color:var(--ac)}code{background:var(--bg);padding:2px 6px;border-radius:4px;word-break:break-all;font-size:12px}.gd{background:var(--bg);border-radius:8px;padding:8px 12px;margin-bottom:10px}.gd p{margin:8px 0}.gd code{background:var(--card)}.grid input{width:100%}.grid label{display:block;margin:0 0 2px;color:var(--mut);font-size:12px;white-space:normal}
+
+.hero{background:linear-gradient(135deg,#1d2b64,#2f5bea 60%,#18a999);color:#fff;padding:22px 16px}
+.wrap{max-width:980px;margin:0 auto}.brand{font-size:26px;font-weight:800;letter-spacing:-.3px}
+.brand span{display:block;font-size:13px;font-weight:400;opacity:.88;letter-spacing:0}
+.search{display:flex;gap:8px;margin:14px 0 8px}
+.search input[type=text]{flex:1;width:auto;min-width:0;font-size:16px;padding:12px 14px;border-radius:10px;border:0;background:#fff;color:#14181f}
+.search button{background:#0b1220;padding:12px 22px;border-radius:10px;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips button{background:rgba(255,255,255,.18);padding:5px 11px;border-radius:99px;font-size:13px;font-weight:500}
+.hero .dis{color:rgba(255,255,255,.9);min-height:18px;margin:10px 0 0;font-size:13px}
+.card{box-shadow:0 1px 3px rgba(16,24,40,.07);border-radius:14px}.vb{letter-spacing:-.5px}
+summary{cursor:pointer}.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:8px 0}
+</style></head><body>
+<header class="hero"><div class="wrap">
+<div class="brand">📈 StockLens<span>Technical chart + fundamentals + news, fetched live in one click</span></div>
+<div class="search"><input type="text" id="sym" placeholder="Stock symbol, e.g. TCS.NS" autocomplete="off" autocapitalize="characters"><button id="lv">Analyse</button></div>
+<div class="chips" id="chips"></div><p class="dis" id="st"></p>
+</div></header>
+<main>
+<div class="card" id="welcome"><h2>How it works</h2>
+<div class="steps"><div class="k"><span>1. Type a symbol</span><b>TCS.NS</b></div><div class="k"><span>2. We fetch it live</span><b>2 years of prices, ratios, headlines</b></div><div class="k"><span>3. You get a verdict</span><b>Buy / Hold / Avoid + reasons</b></div></div>
+<p class="dis" style="margin:8px 0 0">An honest note: no tool can predict a stock with 90% certainty. StockLens shows what three kinds of evidence say today and how its own signals actually performed on this stock in the past, so you can judge the confidence yourself.</p></div>
+<div id="out" hidden>
+<div class="card" id="overall"></div><div class="card" id="bt" hidden></div>
+<div id="tcards">
+<div class="card" id="verdict"></div>
+<div class="card"><h2 id="ct">Chart</h2><div class="row" style="margin:0 0 8px"><select id="rng"><option value="60">3 months</option><option value="130" selected>6 months</option><option value="260">1 year</option><option value="0">All data</option></select>
+<label><input type="checkbox" id="t20" checked> SMA 20</label><label><input type="checkbox" id="t50" checked> SMA 50</label><label><input type="checkbox" id="t200" checked> SMA 200</label><label><input type="checkbox" id="tbb"> Bollinger</label></div>
+<canvas id="cp"></canvas><canvas id="cr"></canvas><canvas id="cm"></canvas></div>
+<div class="card"><h2>Indicator breakdown</h2><div class="sc"><table id="tb"></table></div></div>
+<div class="card"><h2>Trade plan (illustrative)</h2><div class="grid" id="plan"></div></div></div>
+<div class="card" id="fres" hidden></div><div class="card" id="nres" hidden></div>
+</div>
+<details class="card" id="adv"><summary><b>Advanced: paste or upload data manually</b></summary>
+<p class="dis">Use this if live fetching is unavailable. Google Sheets formula for the symbol above: <code id="gf"></code> <button class="g" id="cg">Copy formula</button> · <a id="yl" href="https://finance.yahoo.com" target="_blank" rel="noopener">Yahoo history page</a></p>
+<textarea id="inp" placeholder="Date,Open,High,Low,Close,Volume"></textarea><div class="dis" id="rc"></div>
+<div class="row"><label class="btn g" style="cursor:pointer">Upload CSV<input type="file" id="file" accept=".csv,.txt,.tsv" hidden></label><button class="g" id="demo">Load demo data</button><button id="go">Analyse pasted data</button></div>
+<h2 style="margin-top:16px">Fundamentals <span class="dis">(<a id="sl" href="https://www.screener.in" target="_blank" rel="noopener">Screener.in</a>; filled automatically when live)</span></h2>
+<div class="grid" id="ff"></div><textarea id="qf" style="height:60px;margin-top:8px" placeholder="Quick fill: pe: 24.5 / roe: 18 / de: 0.3 / rg: 12 / pg: 15 / pm: 11 / ph: 55 / ic: 6"></textarea>
+<h2 style="margin-top:16px">News headlines <span class="dis">(<a id="nl" href="https://news.google.com" target="_blank" rel="noopener">Google News</a>; filled automatically when live)</span></h2>
+<textarea id="nw" style="height:80px"></textarea></details>
+<p class="dis">Educational tool, not investment advice. Indicators use past prices and can be wrong. Check company news and your own risk limits, and consider a SEBI-registered advisor before investing.</p>
+</main>
+<script>
+
+const $=id=>document.getElementById(id),css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let D=[],I={};
+const fmt=n=>n==null?'–':n.toLocaleString('en-IN',{maximumFractionDigits:2,minimumFractionDigits:2});
+function parse(t){const L=t.trim().split(/\r?\n/).filter(x=>x.trim());if(L.length<2)return[];
+const sp=L[0].includes('\t')?'\t':',',h=L[0].toLowerCase().split(sp).map(s=>s.replace(/["']/g,'').trim()),f=k=>h.indexOf(k);
+let ci=f('close');if(ci<0)ci=h.findIndex(x=>x.includes('close')&&!x.includes('adj'));if(ci<0)ci=h.findIndex(x=>x.includes('close'));if(ci<0)return[];
+const di=h.findIndex(x=>x.includes('date')||x==='time'),oi=f('open'),hi=f('high'),li=f('low'),vi=h.findIndex(x=>x.includes('vol')),n=s=>parseFloat(String(s).replace(/[,"₹$]/g,'')),o=[];
+for(let i=1;i<L.length;i++){const p=L[i].split(sp),c=n(p[ci]);if(!isFinite(c))continue;const g=(j,d)=>{const v=j>=0?n(p[j]):NaN;return isFinite(v)?v:d};
+o.push({d:di>=0?p[di].replace(/"/g,'').trim():String(i),o:g(oi,c),h:g(hi,c),l:g(li,c),c,v:g(vi,0)})}
+if(o.length>1&&di>=0&&Date.parse(o[0].d)>Date.parse(o[o.length-1].d))o.reverse();return o}
+const sma=(a,n)=>a.map((_,i)=>i<n-1?null:a.slice(i-n+1,i+1).reduce((x,y)=>x+y,0)/n);
+function ema(a,n){const k=2/(n+1);let e=null;return a.map((v,i)=>{if(v==null)return null;e=e==null?v:v*k+e*(1-k);return i<n-1?null:e})}
+function rsi(c,n=14){const r=Array(c.length).fill(null);if(c.length<=n)return r;let g=0,l=0;for(let i=1;i<=n;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d}g/=n;l/=n;r[n]=100-100/(1+g/(l||1e-9));
+for(let i=n+1;i<c.length;i++){const d=c[i]-c[i-1];g=(g*(n-1)+Math.max(d,0))/n;l=(l*(n-1)+Math.max(-d,0))/n;r[i]=100-100/(1+g/(l||1e-9))}return r}
+function calc(){const c=D.map(x=>x.c),e12=ema(c,12),e26=ema(c,26),m=c.map((_,i)=>e12[i]!=null&&e26[i]!=null?e12[i]-e26[i]:null),sg=ema(m,9),
+s20=sma(c,20),sd=c.map((_,i)=>{if(i<19)return null;const a=c.slice(i-19,i+1),mu=s20[i];return Math.sqrt(a.reduce((x,y)=>x+(y-mu)**2,0)/20)});
+const tr=D.map((x,i)=>i?Math.max(x.h-x.l,Math.abs(x.h-D[i-1].c),Math.abs(x.l-D[i-1].c)):x.h-x.l);
+I={c,s20,s50:sma(c,50),s200:sma(c,200),rsi:rsi(c),m,sg,hs:m.map((v,i)=>v!=null&&sg[i]!=null?v-sg[i]:null),
+bu:s20.map((v,i)=>v==null?null:v+2*sd[i]),bl:s20.map((v,i)=>v==null?null:v-2*sd[i]),atr:sma(tr,14)}}
+function tech(){
+calc();const n=D.length,L=n-1,P=I.c[L],S=[],add=(a,b,p,mx,t)=>S.push({a,b,p,mx,t});
+const s20=I.s20[L],s50=I.s50[L],s200=I.s200[L],R=I.rsi[L],bb=(P-I.bl[L])/(I.bu[L]-I.bl[L]||1);
+if(s50!=null)add('Price vs 50-day average',fmt(P)+' vs '+fmt(s50),P>s50?2:-2,2,P>s50?'Above the medium-term trend: buyers in control.':'Below the medium-term trend: sellers in control.');
+else add('Price vs 20-day average',fmt(P)+' vs '+fmt(s20),P>s20?2:-2,2,P>s20?'Above the short-term trend.':'Below the short-term trend.');
+if(s200!=null){add('Price vs 200-day average',fmt(P)+' vs '+fmt(s200),P>s200?2:-2,2,P>s200?'Long-term uptrend intact.':'Long-term trend is down; higher risk.');
+if(s50!=null)add('50/200 crossover',s50>s200?'50-day above 200-day':'50-day below 200-day',s50>s200?1:-1,1,s50>s200?'Golden-cross territory (bullish structure).':'Death-cross territory (bearish structure).')}
+else add('200-day average','Not enough data',0,0,'Add 200+ rows for a long-term trend read.');
+add('RSI (14)',R.toFixed(1),R<30?1:R<45?0:R<=65?1:R<=70?0:-1,1,R<30?'Oversold: a bounce is possible, but wait for a turn.':R<45?'Weak momentum.':R<=65?'Healthy, positive momentum with room to run.':R<=70?'Getting stretched.':'Overbought: chasing here is risky.');
+const m=I.m[L],sg=I.sg[L],h=I.hs[L],h3=I.hs[L-3];
+add('MACD vs signal',m.toFixed(2)+' / '+sg.toFixed(2),m>sg?1:-1,1,m>sg?'MACD above signal: bullish momentum.':'MACD below signal: bearish momentum.');
+add('MACD histogram',h.toFixed(2),h>h3?1:-1,1,h>h3?'Momentum is strengthening.':'Momentum is fading.');
+add('Bollinger %B',(bb*100).toFixed(0)+'%',bb>1?-1:bb<0?1:0,1,bb>1?'Above upper band: extended, pullback risk.':bb<0?'Below lower band: stretched down, possible rebound.':'Inside the bands: normal range.');
+const vols=D.slice(L-20,L).map(x=>x.v),av=vols.reduce((a,b)=>a+b,0)/20,up=D[L].c>=D[L-1].c;
+if(av>0){const hv=D[L].v>av*1.2;add('Volume vs 20-day average',(D[L].v/av).toFixed(2)+'×',hv?(up?1:-1):0,1,hv?(up?'Rise on heavy volume: conviction behind buyers.':'Fall on heavy volume: distribution / selling pressure.'):'Volume is ordinary; no strong signal.')}
+const roc=(P/I.c[L-20]-1)*100;add('20-day return',roc.toFixed(1)+'%',roc>0?1:-1,1,roc>0?'Positive one-month momentum.':'Negative one-month momentum.');
+const sum=S.reduce((a,x)=>a+x.p,0),mx=S.reduce((a,x)=>a+x.mx,0),sc=sum/mx;
+const V=sc>=.5?['Strong Buy','up']:sc>=.25?['Buy','up']:sc>-.25?['Hold / Wait','wn']:sc>-.5?['Avoid','dn']:['Strong Avoid','dn'];
+const sym=($('sym').value.trim()||'Stock').toUpperCase(),pos=S.filter(x=>x.p>0).length,neg=S.filter(x=>x.p<0).length;
+$('verdict').innerHTML='<div class="v"><div><div class="dis">'+'<span id="vs"></span> · last close '+fmt(P)+' · '+D[L].d+'</div><div class="vb '+V[1]+'">'+V[0]+'</div></div><div style="flex:1;min-width:220px"><div class="gauge"><i style="left:calc('+((sc+1)/2*100).toFixed(1)+'% - 2px)"></i></div><div class="gl"><span>Avoid</span><span>Neutral</span><span>Buy</span></div></div></div>'
++'<p style="margin:10px 0 0"><b>'+pos+'</b> bullish and <b>'+neg+'</b> bearish signals out of '+S.length+' (score '+(sc*100).toFixed(0)+'). '+(s200==null?'Only '+n+' rows supplied, so the long-term trend wasn’t assessed. ':'')+(R>70?'RSI is overbought, so consider waiting for a pullback rather than chasing. ':'')+(s200!=null&&P<s200?'Price is under the 200-day average, so be cautious even on short-term bounces. ':'')+'</p>';
+$('vs').textContent=sym;$('ct').textContent=sym+' chart';
+$('tb').innerHTML='<tr><th>Indicator</th><th>Reading</th><th>Signal</th><th>What it means</th></tr>'+S.map(x=>'<tr><td>'+x.a+'</td><td>'+x.b+'</td><td class="'+(x.p>0?'up':x.p<0?'dn':'wn')+'">'+(x.p>0?'Bullish':x.p<0?'Bearish':'Neutral')+'</td><td>'+x.t+'</td></tr>').join('');
+const atr=I.atr[L],sup=Math.min(...D.slice(-30).map(x=>x.l)),res=Math.max(...D.slice(-60).map(x=>x.h));I.sup=sup;I.res=res;
+const k=(a,b,c)=>'<div class="k"><span>'+a+'</span><b'+(c?' class="'+c+'"':'')+'>'+b+'</b></div>';
+$('plan').innerHTML=k('Suggested entry',P>s20*1.05?'Wait for pullback near '+fmt(s20):'Near '+fmt(P),'')+k('Stop-loss (2×ATR)',fmt(P-2*atr),'dn')+k('Target (3×ATR)',fmt(P+3*atr),'up')+k('Reward : risk','1.5 : 1','')+k('Support (30-day low)',fmt(sup),'')+k('Resistance (60-day high)',fmt(res),'')+k('ATR (14)',fmt(atr)+' ('+(atr/P*100).toFixed(1)+'%)','');
+T=sc;draw()}
+function setup(cv,h){const r=devicePixelRatio||1,w=cv.parentElement.clientWidth-28;cv.width=w*r;cv.height=h*r;cv.style.height=h+'px';const x=cv.getContext('2d');x.scale(r,r);x.font='11px system-ui,sans-serif';return[x,w,h]}
+function draw(){if(!D.length)return;const N=+$('rng').value||D.length,n=D.length,s=Math.max(0,n-N),e=n,mut=css('--mut'),bd=css('--bd'),up=css('--up'),dn=css('--dn'),ac=css('--ac'),wn=css('--wn'),tx=css('--tx');
+const X=(x,w,pl,pr)=>{const bw=(w-pl-pr)/(e-s);return[bw,i=>pl+(i-s+.5)*bw]};
+const line=(x,a,cx,Y,col,dash)=>{x.beginPath();x.strokeStyle=col;x.lineWidth=1.4;x.setLineDash(dash||[]);let st=false;for(let i=s;i<e;i++){if(a[i]==null){continue}st?x.lineTo(cx(i),Y(a[i])):(x.moveTo(cx(i),Y(a[i])),st=true)}x.stroke();x.setLineDash([])};
+let [x,w,h]=setup($('cp'),340);const pl=6,pr=56,pt=8,pb=20,[bw,cx]=X(x,w,pl,pr);let lo=1e18,hi=-1e18;
+for(let i=s;i<e;i++){lo=Math.min(lo,D[i].l);hi=Math.max(hi,D[i].h);if($('tbb').checked&&I.bl[i]!=null){lo=Math.min(lo,I.bl[i]);hi=Math.max(hi,I.bu[i])}}
+const pd=(hi-lo)*.05;lo-=pd;hi+=pd;const ph=h-pt-pb,Y=v=>pt+(hi-v)/(hi-lo)*ph;
+x.fillStyle=mut;x.strokeStyle=bd;x.textAlign='left';for(let g=0;g<=5;g++){const v=lo+(hi-lo)*g/5,y=Y(v);x.beginPath();x.moveTo(pl,y);x.lineTo(w-pr,y);x.stroke();x.fillText(fmt(v),w-pr+4,y+4)}
+const mv=Math.max(...D.slice(s,e).map(d=>d.v));if(mv>0)for(let i=s;i<e;i++){x.fillStyle=(D[i].c>=D[i].o?up:dn)+'44';const vh=D[i].v/mv*ph*.18;x.fillRect(cx(i)-bw*.35,pt+ph-vh,Math.max(1,bw*.7),vh)}
+if($('tbb').checked){x.beginPath();for(let i=s;i<e;i++)if(I.bu[i]!=null)x.lineTo(cx(i),Y(I.bu[i]));for(let i=e-1;i>=s;i--)if(I.bl[i]!=null)x.lineTo(cx(i),Y(I.bl[i]));x.fillStyle=ac+'1f';x.fill();line(x,I.bu,cx,Y,ac+'88',[3,3]);line(x,I.bl,cx,Y,ac+'88',[3,3])}
+for(let i=s;i<e;i++){const d=D[i],col=d.c>=d.o?up:dn;x.strokeStyle=x.fillStyle=col;x.lineWidth=1;x.beginPath();x.moveTo(cx(i),Y(d.h));x.lineTo(cx(i),Y(d.l));x.stroke();const t=Y(Math.max(d.o,d.c)),b=Y(Math.min(d.o,d.c));x.fillRect(cx(i)-bw*.35,t,Math.max(1,bw*.7),Math.max(1,b-t))}
+if($('t20').checked)line(x,I.s20,cx,Y,wn);if($('t50').checked)line(x,I.s50,cx,Y,ac);if($('t200').checked)line(x,I.s200,cx,Y,tx);
+[[I.sup,'Support'],[I.res,'Resistance']].forEach(([v,t])=>{if(v>lo&&v<hi){x.strokeStyle=mut;x.setLineDash([6,4]);x.beginPath();x.moveTo(pl,Y(v));x.lineTo(w-pr,Y(v));x.stroke();x.setLineDash([]);x.fillStyle=mut;x.fillText(t,pl+2,Y(v)-3)}});
+x.fillStyle=mut;x.textAlign='center';for(let g=0;g<5;g++){const i=Math.min(e-1,s+Math.round((e-s-1)*g/4));x.fillText(D[i].d.slice(0,10),Math.min(Math.max(cx(i),30),w-pr-20),h-5)}
+// RSI
+[x,w,h]=setup($('cr'),110);let ry=v=>8+(100-v)/100*(h-16);x.fillStyle=mut;x.strokeStyle=bd;[30,50,70].forEach(v=>{x.beginPath();x.moveTo(pl,ry(v));x.lineTo(w-pr,ry(v));x.stroke();x.textAlign='left';x.fillText(v,w-pr+4,ry(v)+4)});x.fillText('RSI 14',pl+2,h-3);line(x,I.rsi,cx,ry,ac);
+// MACD
+[x,w,h]=setup($('cm'),120);let mm=Math.max(...I.m.slice(s,e).filter(v=>v!=null).map(Math.abs),...I.hs.slice(s,e).filter(v=>v!=null).map(Math.abs),1e-9),my=v=>h/2-v/mm*(h/2-10);
+x.strokeStyle=bd;x.beginPath();x.moveTo(pl,h/2);x.lineTo(w-pr,h/2);x.stroke();x.fillStyle=mut;x.fillText('MACD 12,26,9',pl+2,h-3);
+for(let i=s;i<e;i++){const v=I.hs[i];if(v==null)continue;x.fillStyle=(v>=0?up:dn)+'99';x.fillRect(cx(i)-bw*.35,Math.min(my(v),h/2),Math.max(1,bw*.7),Math.abs(my(v)-h/2))}
+line(x,I.m,cx,my,ac);line(x,I.sg,cx,my,wn)}
+let T=null,F=null,N=null;
+const lab=s=>s>=.5?['Strong Buy','up']:s>=.25?['Buy','up']:s>-.25?['Hold / Wait','wn']:s>-.5?['Avoid','dn']:['Strong Avoid','dn'];
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const FD=[['pe','P/E ratio'],['ipe','Industry P/E'],['roe','ROE %'],['de','Debt / equity'],['rg','Sales growth % (YoY)'],['pg','Profit growth % (YoY)'],['pm','Net profit margin %'],['ph','Promoter holding %'],['ic','Interest coverage (×)']];
+$('ff').innerHTML=FD.map(([k,l])=>'<div><label for="f_'+k+'">'+l+'</label><input type="number" step="any" id="f_'+k+'"></div>').join('');
+function upd(){const s=$('sym').value.trim().toUpperCase().replace(/\s/g,''),b=s.replace(/\.(NS|BO)$/,''),g=s.endsWith('.NS')?'NSE:'+b:s.endsWith('.BO')?'BOM:'+b:s,q=encodeURIComponent(b||'stock');
+$('gf').textContent=s?'=GOOGLEFINANCE("'+g+'","all",TODAY()-420,TODAY())':'Type a symbol above first';
+$('yl').href=s?'https://finance.yahoo.com/quote/'+encodeURIComponent(s)+'/history/':'https://finance.yahoo.com';
+$('sl').href=b?'https://www.screener.in/company/'+q+'/':'https://www.screener.in';$('nl').href='https://news.google.com/search?q='+q+'%20share%20price%20news'}
+function rc(){const d=parse($('inp').value),n=d.length,r=n?d[0].d.slice(0,10)+' to '+d[n-1].d.slice(0,10):'';
+$('rc').innerHTML=!$('inp').value.trim()?'':n<35?'<span class="dn">⚠ '+n+' usable rows found. You need a Close column and at least 35 rows.</span>':n<200?'<span class="wn">'+n+' rows found ('+esc(r)+'). Works, but 200+ rows are needed for the 200-day trend.</span>':'<span class="up">✓ '+n+' rows found ('+esc(r)+'). Enough for every indicator.</span>'}
+function fund(){
+$('qf').value.split(/\n/).forEach(l=>{const m=l.match(/^\s*(\w+)\s*[:=]\s*(-?[\d.,]+)/),e=m&&$('f_'+m[1].toLowerCase());if(e)e.value=m[2].replace(/,/g,'')});$('qf').value='';
+const v={};FD.forEach(([k])=>{const x=parseFloat($('f_'+k).value);if(isFinite(x))v[k]=x});const R=[];F=null;
+if(v.pe!=null){const i=v.ipe,p=i?(v.pe<i*.9?1:v.pe>i*1.2?-1:0):(v.pe<15?1:v.pe>40?-1:0);R.push({n:'Valuation (P/E)',val:v.pe+(i?' vs industry '+i:''),p,t:p>0?'Cheaper than peers.':p<0?'Expensive versus peers; needs strong growth to justify it.':'Fairly valued.'})}
+const rule=(k,n,u,f)=>{if(v[k]==null)return;const[p,t]=f(v[k]);R.push({n,val:v[k]+u,p,t})};
+rule('roe','Return on equity','%',x=>x>=15?[1,'Efficient use of shareholder money.']:x<8?[-1,'Low returns on equity.']:[0,'Average profitability.']);
+rule('de','Debt / equity','',x=>x<.5?[1,'Low debt (not meaningful for banks and NBFCs).']:x>1.5?[-1,'High debt adds risk.']:[0,'Moderate debt.']);
+rule('rg','Sales growth','%',x=>x>=10?[1,'Business is growing well.']:x<0?[-1,'Sales are shrinking.']:[0,'Slow growth.']);
+rule('pg','Profit growth','%',x=>x>=10?[1,'Earnings are growing well.']:x<0?[-1,'Profits are shrinking.']:[0,'Slow earnings growth.']);
+rule('pm','Net profit margin','%',x=>x>=10?[1,'Healthy margins.']:x<3?[-1,'Thin margins.']:[0,'Average margins.']);
+rule('ph','Promoter holding','%',x=>x>=50?[1,'Promoters have a large stake.']:x<30?[-1,'Low promoter stake.']:[0,'Moderate stake.']);
+rule('ic','Interest coverage','×',x=>x>=3?[1,'Earnings comfortably cover interest.']:x<1.5?[-1,'Earnings barely cover interest.']:[0,'Adequate cover.']);
+const b=$('fres');if(R.length<3){b.hidden=!R.length;b.innerHTML=R.length?'<h2>Fundamental analysis</h2><p>Fill at least 3 fields to get a score.</p>':'';return}
+const s=R.reduce((a,x)=>a+x.p,0)/R.length;F=s;const L=s>=.5?['Strong','up']:s>=.2?['Good','up']:s>-.2?['Average','wn']:['Weak','dn'];
+b.hidden=false;b.innerHTML='<h2>Fundamental analysis</h2><div class="vb '+L[1]+'">'+L[0]+'</div><p class="dis">'+R.filter(x=>x.p>0).length+' strong and '+R.filter(x=>x.p<0).length+' weak out of '+R.length+' checks. Always compare with the company’s own peers.</p><div class="sc"><table><tr><th>Metric</th><th>Value</th><th>Signal</th><th>Meaning</th></tr>'+R.map(x=>'<tr><td>'+x.n+'</td><td>'+x.val+'</td><td class="'+(x.p>0?'up':x.p<0?'dn':'wn')+'">'+(x.p>0?'Good':x.p<0?'Weak':'Neutral')+'</td><td>'+x.t+'</td></tr>').join('')+'</table></div>'}
+const PW=/\b(profit|growth|beat|surge|record|upgrade|buy|wins?\b|order|expan|rally|strong|dividend|bonus|approv|gain|rise|jump|outperform|raise|boost)/g,NW=/\b(loss|fall|drop|miss|downgrade|sell|probe|fraud|lawsuit|penalt|fine|default|resign|cut|declin|weak|slump|plung|warn|raid|bans?\b|layoff|recall|notice|debt)/g;
+function news(){const L=$('nw').value.split(/\n/).map(x=>x.trim()).filter(Boolean),b=$('nres');N=null;if(!L.length){b.hidden=true;return}
+const R=L.map(t=>{const l=t.toLowerCase();return{t,s:Math.sign((l.match(PW)||[]).length-(l.match(NW)||[]).length)}}),m=R.reduce((a,x)=>a+x.s,0)/R.length;N=m;
+const lb=m>=.3?['Positive','up']:m<=-.3?['Negative','dn']:['Mixed','wn'];
+b.hidden=false;b.innerHTML='<h2>News sentiment</h2><div class="vb '+lb[1]+'">'+lb[0]+'</div><p class="dis">'+R.filter(x=>x.s>0).length+' positive, '+R.filter(x=>x.s<0).length+' negative, '+R.filter(x=>!x.s).length+' neutral headlines. Keyword scoring is rough and can misread context, so read the headlines yourself.</p><div class="sc"><table>'+R.map(x=>'<tr><td>'+esc(x.t)+'</td><td class="'+(x.s>0?'up':x.s<0?'dn':'wn')+'">'+(x.s>0?'Positive':x.s<0?'Negative':'Neutral')+'</td></tr>').join('')+'</table></div>'}
+function overall(){const P=[[T,.5,'Technical (timing)'],[F,.35,'Fundamental (business quality)'],[N,.15,'News tone']],A=P.filter(x=>x[0]!=null),o=$('overall');
+if(!A.length){o.innerHTML='<h2>Overall view</h2><p>Add price data, fundamentals or headlines, then press Analyse.</p>';return}
+const s=A.reduce((a,x)=>a+x[0]*x[1],0)/A.reduce((a,x)=>a+x[1],0),V=lab(s);let note='';
+if(T!=null&&F!=null)note=F>.25&&T<-.25?'Good business but a weak chart: consider waiting for the trend to turn.':F<-.25&&T>.25?'Strong chart but weak fundamentals: treat it as a short-term trade only.':F>.25&&T>.25?'Chart and fundamentals agree: the strongest kind of setup.':F<-.25&&T<-.25?'Both the chart and the fundamentals are weak: better opportunities likely exist.':'';
+if(A.length<3)note+=(note?' ':'')+'Add the missing inputs for a fuller picture.';
+o.innerHTML='<h2>Overall view · '+esc($('sym').value.trim().toUpperCase()||'Stock')+'</h2><div class="v"><div class="vb '+V[1]+'">'+V[0]+'</div><div style="flex:1;min-width:220px"><div class="gauge"><i style="left:calc('+((s+1)/2*100).toFixed(1)+'% - 2px)"></i></div><div class="gl"><span>Avoid</span><span>Neutral</span><span>Buy</span></div></div></div><div class="grid" style="margin-top:10px">'+P.map(x=>'<div class="k"><span>'+x[2]+'</span><b class="'+(x[0]==null?'':lab(x[0])[1])+'">'+(x[0]==null?'Not provided':lab(x[0])[0])+'</b></div>').join('')+'</div><p style="margin:10px 0 0">'+note+'</p><p class="dis" style="margin:6px 0 0">Weighting: technical 50%, fundamental 35%, news 15% (re-balanced if a part is missing).</p>'}
+function analyse(){analyse0();backtest()}
+function analyse0(){upd();D=parse($('inp').value);rc();const ok=D.length>=35;$('out').hidden=false;$('tcards').hidden=!ok;T=null;
+if(ok)tech();else if($('inp').value.trim())alert('Need at least 35 price rows with a Close column (200+ recommended). See the guide in step 1.');
+fund();news();overall()}
+$('sym').oninput=upd;$('inp').oninput=rc;upd();
+$('inp').ondragover=e=>e.preventDefault();$('inp').ondrop=e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('inp').value=r.result;if(!$('sym').value)$('sym').value=f.name.replace(/\.\w+$/,'').replace(/\s.*/,'');analyse()};r.readAsText(f)};
+$('cg').onclick=async()=>{try{await navigator.clipboard.writeText($('gf').textContent);$('cg').textContent='Copied ✓'}catch(e){const r=document.createRange();r.selectNodeContents($('gf'));getSelection().removeAllRanges();getSelection().addRange(r);$('cg').textContent='Selected: press Ctrl/Cmd+C'}setTimeout(()=>$('cg').textContent='Copy formula',2500)};
+function demo(){let sd=7;const r=()=>(sd=(sd*16807)%2147483647)/2147483647,rows=['Date,Open,High,Low,Close,Volume'];let p=100,d=new Date('2025-08-01');
+for(let i=0;i<320;i++){while([0,6].includes(d.getDay()))d.setDate(d.getDate()+1);const dr=i<120?.0008:i<200?-.0012:.0017,o=p,c=p*(1+dr+(r()-.5)*.03),h=Math.max(o,c)*(1+r()*.008),l=Math.min(o,c)*(1-r()*.008);
+rows.push([d.toISOString().slice(0,10),o.toFixed(2),h.toFixed(2),l.toFixed(2),c.toFixed(2),Math.round(1e6*(.7+r()*.8))].join(','));p=c;d.setDate(d.getDate()+1)}
+$('inp').value=rows.join('\n');$('sym').value='DEMO';$('qf').value='pe: 22\nipe: 26\nroe: 19\nde: 0.4\nrg: 14\npg: 17\npm: 12\nph: 55\nic: 8';$('nw').value='Company posts record quarterly profit, beats estimates\nBrokerage upgrades stock on strong order book\nRegulator issues notice over disclosure lapse\nBoard approves plant expansion';analyse()}
+$('go').onclick=analyse;$('demo').onclick=demo;
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('inp').value=r.result;if(!$('sym').value)$('sym').value=f.name.replace(/\.\w+$/,'');analyse()};r.readAsText(f)};
+['rng','t20','t50','t200','tbb'].forEach(i=>$(i).onchange=draw);
+addEventListener('resize',draw);matchMedia('(prefers-color-scheme:dark)').addEventListener('change',draw);
+
+const msg=t=>$('st').textContent=t;
+async function fetchLive(){const s=$('sym').value.trim().toUpperCase().replace(/\s/g,'');if(!s)return msg('Type a stock symbol first, e.g. TCS.NS');
+$('lv').disabled=true;msg('Fetching live prices, fundamentals and news for '+s+'…');
+try{const r=await fetch('/api/stock?symbol='+encodeURIComponent(s));let j;
+try{j=await r.json()}catch(e){throw new Error('Live fetching works only on the hosted version (see README). You can still paste data under Advanced.')}
+if(!r.ok)throw new Error(j.error||'Request failed');
+$('inp').value='Date,Open,High,Low,Close,Volume\n'+j.rows.map(x=>[x.d,x.o,x.h,x.l,x.c,x.v].join(',')).join('\n');
+FD.forEach(([k])=>$('f_'+k).value='');Object.entries(j.fund||{}).forEach(([k,v])=>{const e=$('f_'+k);if(e&&typeof v==='number'&&isFinite(v))e.value=v.toFixed(2)});
+$('nw').value=(j.news||[]).join('\n');$('welcome').hidden=true;analyse();
+try{history.replaceState(null,'','?s='+encodeURIComponent(s))}catch(e){}
+const L=j.rows[j.rows.length-1];msg(j.name+' · '+j.rows.length+' trading days · latest '+L.d+' · '+(Object.keys(j.fund||{}).length?'fundamentals loaded':'fundamentals unavailable (add under Advanced)')+' · '+((j.news||[]).length?j.news.length+' headlines':'no headlines'))}
+catch(e){msg('⚠ '+e.message)}$('lv').disabled=false}
+function backtest(){const b=$('bt'),c=I.c||[],n=c.length,H=20;if(n<260||!I.s200[n-1]){b.hidden=true;return}
+const buy=[],all=[];for(let i=200;i<n-H;i++){const r=I.rsi[i];
+const p=(c[i]>I.s50[i]?2:-2)+(c[i]>I.s200[i]?2:-2)+(I.s50[i]>I.s200[i]?1:-1)+(r<30?1:r<45?0:r<=65?1:r<=70?0:-1)+(I.m[i]>I.sg[i]?1:-1)+(I.hs[i]>I.hs[i-3]?1:-1)+(c[i]>c[i-20]?1:-1),f=c[i+H]/c[i]-1;all.push(f);if(p/9>=.25)buy.push(f)}
+const pc=a=>a.length?Math.round(a.filter(x=>x>0).length/a.length*100):0,av=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length*100:0;
+b.hidden=false;b.innerHTML='<h2>Reality check: how did this method do on this stock?</h2>'+(buy.length<8?'<p>Too few past Buy signals ('+buy.length+') to judge.</p>':'<div class="grid"><div class="k"><span>Past Buy signals</span><b>'+buy.length+'</b></div><div class="k"><span>Higher 20 trading days later</span><b class="'+(pc(buy)>=pc(all)?'up':'dn')+'">'+pc(buy)+'%</b></div><div class="k"><span>Average 20-day return</span><b>'+av(buy).toFixed(1)+'%</b></div><div class="k"><span>Any random day (baseline)</span><b>'+pc(all)+'% · '+av(all).toFixed(1)+'%</b></div></div>')+'<p class="dis" style="margin:8px 0 0">Simplified rules on this stock’s last ~2 years (signals overlap). Even a good hit rate is far from 90%, and past results never guarantee future moves.</p>'}
+$('lv').onclick=fetchLive;$('sym').onkeydown=e=>{if(e.key==='Enter')fetchLive()};
+$('chips').innerHTML=['TCS.NS','RELIANCE.NS','INFY.NS','HDFCBANK.NS','ITC.NS','SBIN.NS','AAPL','NVDA'].map(s=>'<button data-s="'+s+'">'+s+'</button>').join('');
+$('chips').onclick=e=>{const s=e.target.dataset&&e.target.dataset.s;if(s){$('sym').value=s;fetchLive()}};
+const q0=new URLSearchParams(location.search).get('s');if(q0){$('sym').value=q0;fetchLive()}
+
+</script></body></html>
